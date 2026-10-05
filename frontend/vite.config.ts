@@ -2,14 +2,18 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// In dev, Vite proxies API calls to the local FastAPI server, so the app
-// always talks to same-origin /api — exactly as it does in production.
+// Own ports (not Vite/uvicorn defaults) so this never collides with other
+// local projects. strictPort fails loudly instead of silently picking another.
+const API = process.env.VITE_API_TARGET ?? 'http://127.0.0.1:8100'
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    port: 5291,
+    strictPort: true,
     proxy: {
-      '/api': 'http://127.0.0.1:8000',
-      '/health': 'http://127.0.0.1:8000',
+      '/api': API,
+      '/health': API,
     },
   },
 })

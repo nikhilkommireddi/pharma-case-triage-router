@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Case Triage & Routing", lifespan=lifespan)
 
-_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",") if o.strip()]
+_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:5291").split(",") if o.strip()]
 app.add_middleware(CORSMiddleware, allow_origins=_origins, allow_methods=["*"], allow_headers=["*"])
 
 api = APIRouter(prefix="/api")

@@ -49,10 +49,10 @@ IntakeCase ─► Extract (Claude) ─► Ground ─► Rules ─► Route ─�
 python -m venv .venv
 .venv/Scripts/pip install -r requirements-dev.txt   # Windows; use .venv/bin on macOS/Linux
 cp .env.example .env                                # add ANTHROPIC_API_KEY
-.venv/Scripts/uvicorn app.main:app --reload         # http://127.0.0.1:8000/docs
+.venv/Scripts/uvicorn app.main:app --reload --port 8100   # http://127.0.0.1:8100/docs
 
-# Frontend (second terminal); Vite proxies /api to :8000
-cd frontend && npm install && npm run dev           # http://localhost:5173
+# Frontend (second terminal); Vite proxies /api to :8100
+cd frontend && npm install && npm run dev           # http://localhost:5291
 
 # Tests (offline, no API calls)
 .venv/Scripts/python -m pytest -q
