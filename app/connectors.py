@@ -12,7 +12,7 @@ the linked quality complaint and vice versa without anyone re-keying data.
 
 from __future__ import annotations
 
-import sqlite3
+from sqlalchemy import Engine
 from itertools import count
 
 from . import db
@@ -27,7 +27,7 @@ class Connector:
     def build_payload(self, case: IntakeCase, x: CaseExtraction, result: TriageResult, route: Route) -> dict:
         raise NotImplementedError
 
-    def create(self, conn: sqlite3.Connection, record_id: str, case: IntakeCase, payload: dict) -> str:
+    def create(self, conn: Engine, record_id: str, case: IntakeCase, payload: dict) -> str:
         db.insert_record(conn, record_id, self.system, self.destination.value, case.case_id, payload)
         return record_id
 
@@ -95,7 +95,7 @@ CONNECTORS: dict[Destination, Connector] = {
 }
 
 
-def dispatch(conn: sqlite3.Connection, case: IntakeCase, x: CaseExtraction, result: TriageResult, actor: str) -> TriageResult:
+def dispatch(conn: Engine, case: IntakeCase, x: CaseExtraction, result: TriageResult, actor: str) -> TriageResult:
     """Create one linked child record per routable destination; returns the updated result."""
     targets = [r for r in result.routes if r.destination in CONNECTORS]
     seq = count(1)

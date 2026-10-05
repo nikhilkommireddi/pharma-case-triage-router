@@ -64,6 +64,12 @@ class FakeExtractor:
 
 @pytest.fixture
 def conn():
-    c = db.connect(":memory:")
-    yield c
-    c.close()
+    # Set TEST_DATABASE_URL to run the suite against Postgres.
+    import os
+    url = os.getenv("TEST_DATABASE_URL", ":memory:")
+    engine = db.connect(url)
+    yield engine
+    if url != ":memory:":
+        with engine.begin() as c:
+            c.exec_driver_sql("DROP TABLE IF EXISTS audit_log, external_records, cases CASCADE")
+    engine.dispose()

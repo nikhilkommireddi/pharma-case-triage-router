@@ -64,25 +64,35 @@ def test_review_override_changes_destinations(conn):
 def test_audit_log_is_append_only_and_tamper_evident(conn):
     pipeline.triage(conn, make_case(), FakeExtractor(pen_extraction()))
     with pytest.raises(Exception):
-        conn.execute("UPDATE audit_log SET actor = 'x' WHERE seq = 1")
-    # Simulate someone bypassing the trigger at the file level.
-    conn.execute("DROP TRIGGER audit_no_update")
-    conn.execute("UPDATE audit_log SET detail_json = '{}' WHERE seq = 2")
-    assert db.verify_audit_chain(conn) == (False, 2)
+        with conn.begin() as c:
+            c.exec_driver_sql("UPDATE audit_log SET actor = 'x' WHERE seq = 1")
+    # Simulate someone with admin rights bypassing the trigger.
+    with conn.begin() as c:
+        c.exec_driver_sql("DROP TRIGGER " + ("audit_no_update" if conn.dialect.name == "sqlite"
+                                             else "audit_no_modify ON audit_log"))
+        first = c.exec_driver_sql("SELECT MIN(seq) FROM audit_log").scalar()
+        c.exec_driver_sql(f"UPDATE audit_log SET detail_json = '{{}}' WHERE seq = {first + 1}")
+    assert db.verify_audit_chain(conn) == (False, first + 1)
 
 
 def test_api_end_to_end(conn):
     app.state.conn = conn
     app.state.extractor = FakeExtractor(pen_extraction())
     with TestClient(app) as client:
-        r = client.post("/cases", json=make_case().model_dump(mode="json"))
+        r = client.post("/api/cases", json=make_case().model_dump(mode="json"))
         assert r.status_code == 201, r.text
         assert r.json()["status"] == "auto_routed"
 
-        assert client.post("/cases", json=make_case().model_dump(mode="json")).status_code == 409
-        assert len(client.get("/queues/drug_safety").json()) == 1
-        assert client.get("/queues/human-triage").json() == []
-        assert client.get("/audit/verify").json()["intact"] is True
-        detail = client.get("/cases/C-001").json()
+        assert client.post("/api/cases", json=make_case().model_dump(mode="json")).status_code == 409
+        assert len(client.get("/api/queues/drug_safety").json()) == 1
+        assert client.get("/api/queues/human-triage").json() == []
+        assert client.get("/api/audit/verify").json()["intact"] is True
+        detail = client.get("/api/cases/C-001").json()
         assert len(detail["records"]) == 2
+
+        health = client.get("/health").json()
+        assert health["status"] == "ok"
+        stats = client.get("/api/stats").json()
+        assert stats["total"] == 1 and stats["by_destination"]["drug_safety"] == 1
+        assert len(client.get("/api/samples").json()) >= 10
     del app.state.conn, app.state.extractor

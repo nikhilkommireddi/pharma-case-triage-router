@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import sqlite3
+from sqlalchemy import Engine
 
 from . import db
 from .connectors import dispatch
@@ -30,7 +30,7 @@ def _save(conn, case: IntakeCase, result: TriageResult, extraction: CaseExtracti
     )
 
 
-def triage(conn: sqlite3.Connection, case: IntakeCase, extractor: Extractor) -> TriageResult:
+def triage(conn: Engine, case: IntakeCase, extractor: Extractor) -> TriageResult:
     if db.get_case(conn, case.case_id):
         raise ValueError(f"Case {case.case_id} already exists")
 
@@ -77,7 +77,7 @@ def triage(conn: sqlite3.Connection, case: IntakeCase, extractor: Extractor) -> 
     return result
 
 
-def review(conn: sqlite3.Connection, case_id: str, reviewer: str, approve: bool,
+def review(conn: Engine, case_id: str, reviewer: str, approve: bool,
            destinations: list[Destination] | None, comment: str) -> TriageResult:
     """Human triage lead signs off: approve the proposed routes, or override them."""
     stored = db.get_case(conn, case_id)
