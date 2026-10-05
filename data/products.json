@@ -1,0 +1,35 @@
+{
+  "_note": "Synthetic reference safety information for demo purposes only. Not real product labels.",
+  "products": [
+    {
+      "product_id": "PRD-001",
+      "names": ["Cardiolex", "cardiolex autoinjector", "rivanoxate"],
+      "dosage_form": "prefilled autoinjector pen",
+      "is_device_combination": true,
+      "labeled_events": [
+        "injection site bruising", "injection site hematoma", "injection site pain",
+        "bleeding", "nosebleed", "epistaxis", "gum bleeding", "anemia", "headache"
+      ]
+    },
+    {
+      "product_id": "PRD-002",
+      "names": ["Glucavant", "glucavant tablets", "metrabrin"],
+      "dosage_form": "oral tablet",
+      "is_device_combination": false,
+      "labeled_events": [
+        "nausea", "diarrhea", "vomiting", "abdominal pain", "hypoglycemia",
+        "dizziness", "lactic acidosis", "vitamin b12 deficiency"
+      ]
+    },
+    {
+      "product_id": "PRD-003",
+      "names": ["Neurafen XR", "neurafen", "lamotrexil"],
+      "dosage_form": "extended-release capsule",
+      "is_device_combination": false,
+      "labeled_events": [
+        "rash", "dizziness", "somnolence", "headache", "blurred vision",
+        "stevens-johnson syndrome", "nausea"
+      ]
+    }
+  ]
+}
